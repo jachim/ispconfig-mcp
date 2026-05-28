@@ -9,10 +9,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
-    "start": "node dist/index.js",
-    "lint": "tsc --noEmit"
-  },
+    "prepare": "npm run build",
+    "start": "node dist/index.js"
+  }
   "keywords": [
     "mcp",
     "model-context-protocol",
