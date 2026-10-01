@@ -502,7 +502,7 @@ export function registerMigrationTools(server: McpServer, source: ISPConfigClien
       if (scope === "all" || scope === "mail") {
         lines.push("## Mail Domains");
         try {
-          const domains = await source.call("mail_domain_get_by_user", { client_id: 0, server_id: 0 });
+          const domains = await source.call("mail_domain_get", { primary_id: {} });
           if (Array.isArray(domains)) {
             lines.push(`Found ${domains.length} mail domain(s):`);
             for (const d of domains as Record<string, unknown>[]) {
@@ -655,8 +655,8 @@ export function registerMigrationTools(server: McpServer, source: ISPConfigClien
         lines.push("## Mail Domains");
         let mailOk = 0, mailMissing = 0;
         try {
-          const srcDomains = await source.call("mail_domain_get_by_user", { client_id: 0, server_id: 0 });
-          const destDomains = await dest.call("mail_domain_get_by_user", { client_id: 0, server_id: 0 });
+          const srcDomains = await source.call("mail_domain_get", { primary_id: {} });
+          const destDomains = await dest.call("mail_domain_get", { primary_id: {} });
 
           const srcList = Array.isArray(srcDomains) ? srcDomains as Record<string, unknown>[] : [];
           const destList = Array.isArray(destDomains) ? destDomains as Record<string, unknown>[] : [];

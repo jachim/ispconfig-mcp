@@ -68,7 +68,7 @@ export class ISPConfigClient {
       return await this.rawCall(method, { session_id: sessionId, ...params });
     } catch (err: unknown) {
       // If session expired, re-login and retry once
-      if (err instanceof Error && err.message.includes("session")) {
+      if (err instanceof Error && /session/i.test(err.message)) {
         this.sessionId = null;
         const newSession = await this.ensureSession();
         return await this.rawCall(method, { session_id: newSession, ...params });

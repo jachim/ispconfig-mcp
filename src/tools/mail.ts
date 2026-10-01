@@ -10,9 +10,8 @@ export function registerMailTools(server: McpServer, client: ISPConfigClient) {
     "List all mail domains",
     {},
     async () => {
-      const result = await client.call("mail_domain_get_by_user", {
-        client_id: 0,
-        server_id: 0,
+      const result = await client.call("mail_domain_get", {
+        primary_id: {},
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     },
