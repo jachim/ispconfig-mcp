@@ -165,6 +165,16 @@ Add to your MCP config file:
 | `migrate_import_web_domain` | Import a website bundle (config only — rsync files separately) |
 | `migrate_data_commands` | Generate rsync/mysqldump commands for actual data transfer |
 
+## Secret masking
+
+Every response is masked before it reaches the model (`src/redact.ts`): `ssl_key`, `ssl_request`, `dkim_private`
+and every field whose name contains `passw`, `secret`, `token`, `private_key` or `api_key` comes back as
+`[REDACTED]` (empty values stay empty). Public material such as `ssl_cert` or `dkim_public` is returned as is.
+
+Fields sent with the value `[REDACTED]` are dropped from the request, so echoing a fetched record into an update
+never overwrites the real secret. Consequence for migrations: exported bundles carry no private keys or password
+hashes; set them on the destination by hand (or re-issue certificates) after the import.
+
 ## Migration Between Servers
 
 The MCP supports migrating accounts between ISPConfig instances. The workflow:
@@ -242,6 +252,7 @@ git clone https://github.com/DayZAnder/ispconfig-mcp.git
 cd ispconfig-mcp
 npm install
 npm run build
+npm test
 ```
 
 ## License

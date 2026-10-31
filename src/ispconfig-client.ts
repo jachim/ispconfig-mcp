@@ -7,6 +7,8 @@
  * Authentication returns a session_id that must be passed to every call.
  */
 
+import { dropRedacted, redactSecrets } from "./redact.js";
+
 export interface ISPConfigOptions {
   url: string; // e.g. https://smallfoot.xh.se:8080
   username: string;
@@ -63,15 +65,17 @@ export class ISPConfigClient {
    * Session ID is automatically injected.
    */
   async call(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+    // Secrets never reach the model (responses) and placeholders never reach ISPConfig (params); see redact.ts.
+    const safeParams = dropRedacted(params);
     const sessionId = await this.ensureSession();
     try {
-      return await this.rawCall(method, { session_id: sessionId, ...params });
+      return redactSecrets(await this.rawCall(method, { session_id: sessionId, ...safeParams }));
     } catch (err: unknown) {
       // If session expired, re-login and retry once
       if (err instanceof Error && /session/i.test(err.message)) {
         this.sessionId = null;
         const newSession = await this.ensureSession();
-        return await this.rawCall(method, { session_id: newSession, ...params });
+        return redactSecrets(await this.rawCall(method, { session_id: newSession, ...safeParams }));
       }
       throw err;
     }
@@ -104,7 +108,7 @@ export class ISPConfigClient {
         return json.response;
       }
       if (json.code === "remote_fault") {
-        throw new Error(`ISPConfig remote fault: ${json.message ?? JSON.stringify(json)}`);
+        throw new Error(`ISPConfig remote fault: ${json.message ?? JSON.stringify(redactSecrets(json))}`);
       }
     }
 
